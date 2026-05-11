@@ -3,7 +3,7 @@ package handler
 import (
     "net/http"
 
-    "ecommerce-api/internal/domain/entity"
+    "ecommerce-api/internal/domain/contract"
     delivery "ecommerce-api/internal/delivery/http/responses"
 
     "github.com/gin-gonic/gin"
@@ -21,10 +21,10 @@ type loginReq struct {
 }
 
 type UserHandler struct {
-    uc entity.UserUsecase
+    uc contract.UserUsecase
 }
 
-func NewUserHandler(uc entity.UserUsecase) *UserHandler {
+func NewUserHandler(uc contract.UserUsecase) *UserHandler {
     return &UserHandler{uc: uc}
 }
 
@@ -35,7 +35,7 @@ func (h *UserHandler) Register(c *gin.Context) {
         delivery.Fail(c, http.StatusBadRequest, err.Error())
         return
     }
-    user, err := h.uc.Register(entity.RegisterRequest{
+    user, err := h.uc.Register(contract.RegisterRequest{
         Name:     req.Name,
         Email:    req.Email,
         Password: req.Password,
@@ -56,7 +56,7 @@ func (h *UserHandler) Login(c *gin.Context) {
         delivery.Fail(c, http.StatusBadRequest, err.Error())
         return
     }
-    token, err := h.uc.Login(entity.LoginRequest{
+    token, err := h.uc.Login(contract.LoginRequest{
         Email:    req.Email,
         Password: req.Password,
     })
