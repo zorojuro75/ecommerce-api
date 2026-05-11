@@ -4,6 +4,7 @@ import (
     "fmt"
 
     "ecommerce-api/internal/domain/entity"
+    "ecommerce-api/internal/domain/contract"
     domainrepo "ecommerce-api/internal/domain/repository"
     "ecommerce-api/pkg/apperror"
     "ecommerce-api/pkg/hash"
@@ -15,11 +16,11 @@ type userUsecase struct {
     jwtSecret string
 }
 
-func NewUserUsecase(repo domainrepo.UserRepository, jwtSecret string) entity.UserUsecase {
+func NewUserUsecase(repo domainrepo.UserRepository, jwtSecret string) contract.UserUsecase {
     return &userUsecase{repo: repo, jwtSecret: jwtSecret}
 }
 
-func (uc *userUsecase) Register(req entity.RegisterRequest) (*entity.User, error) {
+func (uc *userUsecase) Register(req contract.RegisterRequest) (*entity.User, error) {
     existing, _ := uc.repo.FindByEmail(req.Email)
     if existing != nil {
         return nil, fmt.Errorf("Register: %w", apperror.ErrConflict)
@@ -46,7 +47,7 @@ func (uc *userUsecase) Register(req entity.RegisterRequest) (*entity.User, error
     return u, nil
 }
 
-func (uc *userUsecase) Login(req entity.LoginRequest) (string, error) {
+func (uc *userUsecase) Login(req contract.LoginRequest) (string, error) {
     u, err := uc.repo.FindByEmail(req.Email)
     if err != nil {
         return "", fmt.Errorf("Login: %w", apperror.ErrUnauthorized)

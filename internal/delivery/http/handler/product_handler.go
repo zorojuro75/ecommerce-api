@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"ecommerce-api/internal/domain/entity"
 	delivery "ecommerce-api/internal/delivery/http/responses"
+	"ecommerce-api/internal/domain/contract"
 	"ecommerce-api/pkg/apperror"
 
 	"github.com/gin-gonic/gin"
@@ -56,10 +56,10 @@ type updateProductReq struct {
 }
 
 type ProductHandler struct {
-    uc entity.ProductUsecase
+    uc contract.ProductUsecase
 }
 
-func NewProductHandler(uc entity.ProductUsecase) *ProductHandler {
+func NewProductHandler(uc contract.ProductUsecase) *ProductHandler {
     return &ProductHandler{uc: uc}
 }
 
@@ -99,7 +99,7 @@ func (h *ProductHandler) Create(c *gin.Context) {
         return
     }
 
-    product, err := h.uc.CreateProduct(entity.CreateProductRequest{
+    product, err := h.uc.CreateProduct(contract.CreateProductRequest{
         Name:        req.Name,
         Description: req.Description,
         Price:       req.Price,
@@ -122,7 +122,7 @@ func (h *ProductHandler) Update(c *gin.Context) {
         return
     }
 
-    product, err := h.uc.UpdateProduct(id, entity.UpdateProductRequest{
+    product, err := h.uc.UpdateProduct(id, contract.UpdateProductRequest{
         Name:        req.Name,
         Description: req.Description,
         Price:       req.Price,

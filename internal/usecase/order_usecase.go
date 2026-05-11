@@ -4,6 +4,7 @@ import (
     "fmt"
 
     "ecommerce-api/internal/domain/entity"
+    "ecommerce-api/internal/domain/contract"
     domainrepo "ecommerce-api/internal/domain/repository"
     "ecommerce-api/pkg/apperror"
 )
@@ -16,14 +17,14 @@ type orderUsecase struct {
 func NewOrderUsecase(
     orderRepo   domainrepo.OrderRepository,
     productRepo domainrepo.ProductRepository,
-) entity.OrderUsecase {
+) contract.OrderUsecase {
     return &orderUsecase{
         orderRepo:   orderRepo,
         productRepo: productRepo,
     }
 }
 
-func (uc *orderUsecase) PlaceOrder(req entity.PlaceOrderRequest) (*entity.Order, error) {
+func (uc *orderUsecase) PlaceOrder(req contract.PlaceOrderRequest) (*entity.Order, error) {
     if len(req.Items) == 0 {
         return nil, fmt.Errorf("PlaceOrder: %w", apperror.ErrInvalidInput)
     }

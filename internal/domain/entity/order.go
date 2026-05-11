@@ -50,19 +50,3 @@ func (o Order) Validate() error {
     return nil
 }
 
-type OrderUsecase interface {
-    PlaceOrder(req PlaceOrderRequest) (*Order, error)
-    GetOrder(id uint) (*Order, error)
-    ListUserOrders(userID uint, page, limit int) ([]Order, int64, error)
-    CancelOrder(id, userID uint) error
-}
-
-type PlaceOrderRequest struct {
-    UserID uint
-    Items  []OrderItemRequest
-}
-
-type OrderItemRequest struct {
-    ProductID uint
-    Quantity  int
-}

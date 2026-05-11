@@ -4,6 +4,7 @@ import (
     "fmt"
 
     "ecommerce-api/internal/domain/entity"
+    "ecommerce-api/internal/domain/contract"
     domainrepo "ecommerce-api/internal/domain/repository"
 )
 
@@ -11,11 +12,11 @@ type productUsecase struct {
     repo domainrepo.ProductRepository
 }
 
-func NewProductUsecase(repo domainrepo.ProductRepository) entity.ProductUsecase {
+func NewProductUsecase(repo domainrepo.ProductRepository) contract.ProductUsecase {
     return &productUsecase{repo: repo}
 }
 
-func (uc *productUsecase) CreateProduct(req entity.CreateProductRequest) (*entity.Product, error) {
+func (uc *productUsecase) CreateProduct(req contract.CreateProductRequest) (*entity.Product, error) {
     p := &entity.Product{
         Name:        req.Name,
         Description: req.Description,
@@ -52,7 +53,7 @@ func (uc *productUsecase) ListProducts(page, limit int) ([]entity.Product, int64
     return products, total, nil
 }
 
-func (uc *productUsecase) UpdateProduct(id uint, req entity.UpdateProductRequest) (*entity.Product, error) {
+func (uc *productUsecase) UpdateProduct(id uint, req contract.UpdateProductRequest) (*entity.Product, error) {
     p, err := uc.repo.FindByID(id)
     if err != nil {
         return nil, fmt.Errorf("UpdateProduct: %w", err)
