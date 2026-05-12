@@ -29,7 +29,7 @@ func main() {
     productHandler := handler.NewProductHandler(productUC)
     userHandler    := handler.NewUserHandler(userUC)
 
-    router := delivery.NewRouter(productHandler, userHandler)
+    router := delivery.NewRouter(productHandler, userHandler, cfg.JWTSecret)
     r      := router.Setup()
 
     addr := ":" + cfg.ServerPort

@@ -5,6 +5,7 @@ import (
 
     "ecommerce-api/internal/domain/contract"
     delivery "ecommerce-api/internal/delivery/http/responses"
+    "ecommerce-api/internal/delivery/http/middleware"
 
     "github.com/gin-gonic/gin"
 )
@@ -26,6 +27,23 @@ type UserHandler struct {
 
 func NewUserHandler(uc contract.UserUsecase) *UserHandler {
     return &UserHandler{uc: uc}
+}
+
+// GET /api/v1/me — requires auth middleware
+func (h *UserHandler) Me(c *gin.Context) {
+    userID := middleware.MustGetUserID(c)
+    if userID == 0 { return }
+
+    user, err := h.uc.GetUser(userID)
+    if err != nil { mapErr(c, err); return }
+
+    delivery.OK(c, gin.H{
+        "id":         user.ID,
+        "name":       user.Name,
+        "email":      user.Email,
+        "role":       user.Role,
+        "created_at": user.CreatedAt,
+    })
 }
 
 // POST /api/v1/auth/register
