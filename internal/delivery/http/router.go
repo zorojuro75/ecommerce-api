@@ -13,17 +13,20 @@ import (
 type Router struct {
     productHandler *handler.ProductHandler
     userHandler    *handler.UserHandler
+    orderHandler   *handler.OrderHandler
     jwtSecret      string
 }
 
 func NewRouter(
     productHandler *handler.ProductHandler,
     userHandler    *handler.UserHandler,
+    orderHandler   *handler.OrderHandler,
     jwtSecret      string,
 ) *Router {
     return &Router{
         productHandler: productHandler,
         userHandler:    userHandler,
+        orderHandler:   orderHandler,
         jwtSecret:      jwtSecret,
     }
 }
@@ -53,7 +56,7 @@ func (ro *Router) Setup() *gin.Engine {
         products.GET("/:id", ro.productHandler.Get)
     }
 
-    auth := middleware.AuthMiddleware(ro.jwtSecret)
+    auth := middleware.Auth(ro.jwtSecret)
     protected := v1.Group("", auth)
     {
         p := protected.Group("/products")
@@ -63,6 +66,12 @@ func (ro *Router) Setup() *gin.Engine {
 
         v1.GET("/me", auth, ro.userHandler.Me)
     }
-
+    orders := protected.Group("/orders")
+    {
+        orders.POST("",            ro.orderHandler.PlaceOrder)
+        orders.GET("/my",         ro.orderHandler.MyOrders)
+        orders.GET("/:id",        ro.orderHandler.GetOrder)
+        orders.PATCH("/:id/cancel", ro.orderHandler.CancelOrder)
+    }
     return r
 }

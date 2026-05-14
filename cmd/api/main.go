@@ -23,13 +23,13 @@ func main() {
     productUC := usecase.NewProductUsecase(productRepo)
     userUC    := usecase.NewUserUsecase(userRepo, cfg.JWTSecret)
     orderUC   := usecase.NewOrderUsecase(orderRepo, productRepo)
-    _ = orderUC
+    orderHandler   := handler.NewOrderHandler(orderUC)
 
 
     productHandler := handler.NewProductHandler(productUC)
     userHandler    := handler.NewUserHandler(userUC)
 
-    router := delivery.NewRouter(productHandler, userHandler, cfg.JWTSecret)
+    router := delivery.NewRouter(productHandler, userHandler, orderHandler, cfg.JWTSecret)
     r      := router.Setup()
 
     addr := ":" + cfg.ServerPort

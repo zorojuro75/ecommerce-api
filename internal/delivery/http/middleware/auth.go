@@ -14,7 +14,7 @@ const (
     ContextRole   = "role"
 )
 
-func AuthMiddleware(secret string) gin.HandlerFunc {
+func Auth(jwtSecret string) gin.HandlerFunc {
     return func(c *gin.Context) {
         authHeader := c.GetHeader("Authorization")
         if authHeader == "" {
@@ -29,13 +29,14 @@ func AuthMiddleware(secret string) gin.HandlerFunc {
         if len(parts) != 2 || !strings.EqualFold(parts[0], "bearer") {
             c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
                 "success": false,
-                "error":   "authorization format: Bearer <token>",
+                "error":   "authorization format must be: Bearer <token>",
             })
             return
         }
+
         tokenStr := parts[1]
 
-        claims, err := jwt.Validate(tokenStr, secret)
+        claims, err := jwt.Validate(tokenStr, jwtSecret)
         if err != nil {
             c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
                 "success": false,
@@ -51,6 +52,20 @@ func AuthMiddleware(secret string) gin.HandlerFunc {
     }
 }
 
+func AdminOnly() gin.HandlerFunc {
+    return func(c *gin.Context) {
+        role, _ := c.Get(ContextRole)
+        if role != "admin" {
+            c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+                "success": false,
+                "error":   "admin access required",
+            })
+            return
+        }
+        c.Next()
+    }
+}
+
 func GetUserID(c *gin.Context) (uint, bool) {
     val, exists := c.Get(ContextUserID)
     if !exists {
@@ -60,23 +75,8 @@ func GetUserID(c *gin.Context) (uint, bool) {
     return id, ok
 }
 
-func GetRole(c *gin.Context) (string, bool) {
-    val, exists := c.Get(ContextRole)
-    if !exists {
-        return "", false
-    }
-    role, ok := val.(string)
-    return role, ok
-}
-
-func MustGetUserID(c *gin.Context) uint {
-    id, ok := GetUserID(c)
-    if !ok {
-        c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-            "success": false,
-            "error":   "unauthorized",
-        })
-        return 0
-    }
-    return id
+func GetRole(c *gin.Context) string {
+    val, _ := c.Get(ContextRole)
+    role, _ := val.(string)
+    return role
 }

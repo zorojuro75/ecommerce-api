@@ -29,10 +29,13 @@ func NewUserHandler(uc contract.UserUsecase) *UserHandler {
     return &UserHandler{uc: uc}
 }
 
-// GET /api/v1/me — requires auth middleware
+// GET /api/v1/me
 func (h *UserHandler) Me(c *gin.Context) {
-    userID := middleware.MustGetUserID(c)
-    if userID == 0 { return }
+    userID, ok := middleware.GetUserID(c)
+    if !ok {
+        delivery.Fail(c, http.StatusUnauthorized, "unauthorized")
+        return
+    }
 
     user, err := h.uc.GetUser(userID)
     if err != nil { mapErr(c, err); return }
