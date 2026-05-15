@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	delivery "ecommerce-api/internal/delivery/http/responses"
+	responses "ecommerce-api/internal/delivery/http/responses"
 	"ecommerce-api/internal/domain/contract"
 	"ecommerce-api/pkg/apperror"
 
@@ -15,25 +15,25 @@ import (
 func mapErr(c *gin.Context, err error) {
     switch {
     case errors.Is(err, apperror.ErrNotFound):
-        delivery.Fail(c, http.StatusNotFound, err.Error())
+        responses.Fail(c, http.StatusNotFound, err.Error())
     case errors.Is(err, apperror.ErrUnauthorized):
-        delivery.Fail(c, http.StatusUnauthorized, err.Error())
+        responses.Fail(c, http.StatusUnauthorized, err.Error())
     case errors.Is(err, apperror.ErrConflict):
-        delivery.Fail(c, http.StatusConflict, err.Error())
+        responses.Fail(c, http.StatusConflict, err.Error())
     case errors.Is(err, apperror.ErrOutOfStock):
-        delivery.Fail(c, http.StatusConflict, err.Error())
+        responses.Fail(c, http.StatusConflict, err.Error())
     case errors.Is(err, apperror.ErrInvalidInput),
          errors.Is(err, apperror.ErrBadRequest):
-        delivery.Fail(c, http.StatusBadRequest, err.Error())
+         responses.Fail(c, http.StatusBadRequest, err.Error())
     default:
-        delivery.Fail(c, http.StatusInternalServerError, "internal server error")
+        responses.Fail(c, http.StatusInternalServerError, "internal server error")
     }
 }
 
 func parseID(c *gin.Context) (uint, bool) {
     id, err := strconv.ParseUint(c.Param("id"), 10, 64)
     if err != nil {
-        delivery.Fail(c, http.StatusBadRequest, "invalid id — must be a positive integer")
+        responses.Fail(c, http.StatusBadRequest, "invalid id — must be a positive integer")
         return 0, false
     }
     return uint(id), true
@@ -70,14 +70,7 @@ func (h *ProductHandler) List(c *gin.Context) {
 
     products, total, err := h.uc.ListProducts(page, limit)
     if err != nil { mapErr(c, err); return }
-
-    c.JSON(http.StatusOK, gin.H{
-        "success": true,
-        "data":    products,
-        "total":   total,
-        "page":    page,
-        "limit":   limit,
-    })
+    responses.Paginated(c, products, total, page, limit)
 }
 
 // GET /api/v1/products/:id
@@ -88,14 +81,14 @@ func (h *ProductHandler) Get(c *gin.Context) {
     product, err := h.uc.GetProduct(id)
     if err != nil { mapErr(c, err); return }
 
-    delivery.OK(c, product)
+    responses.OK(c, product)
 }
 
 // POST /api/v1/products
 func (h *ProductHandler) Create(c *gin.Context) {
     var req createProductReq
     if err := c.ShouldBindJSON(&req); err != nil {
-        delivery.Fail(c, http.StatusBadRequest, err.Error())
+        responses.Fail(c, http.StatusBadRequest, err.Error())
         return
     }
 
@@ -108,7 +101,7 @@ func (h *ProductHandler) Create(c *gin.Context) {
     })
     if err != nil { mapErr(c, err); return }
 
-    delivery.Created(c, product)
+    responses.Created(c, product)
 }
 
 // PUT /api/v1/products/:id
@@ -118,7 +111,7 @@ func (h *ProductHandler) Update(c *gin.Context) {
 
     var req updateProductReq
     if err := c.ShouldBindJSON(&req); err != nil {
-        delivery.Fail(c, http.StatusBadRequest, err.Error())
+        responses.Fail(c, http.StatusBadRequest, err.Error())
         return
     }
 
@@ -131,7 +124,7 @@ func (h *ProductHandler) Update(c *gin.Context) {
     })
     if err != nil { mapErr(c, err); return }
 
-    delivery.OK(c, product)
+    responses.OK(c, product)
 }
 
 // DELETE /api/v1/products/:id
@@ -143,5 +136,5 @@ func (h *ProductHandler) Delete(c *gin.Context) {
         mapErr(c, err)
         return
     }
-    delivery.OK(c, gin.H{"message": "product deleted"})
+    responses.OK(c, gin.H{"message": "product deleted"})
 }

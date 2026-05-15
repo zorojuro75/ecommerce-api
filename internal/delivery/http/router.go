@@ -1,13 +1,14 @@
 package http
 
 import (
-    "net/http"
-    "time"
+	"fmt"
+	"net/http"
+	"time"
 
-    "ecommerce-api/internal/delivery/http/handler"
-    "ecommerce-api/internal/delivery/http/middleware"
+	"ecommerce-api/internal/delivery/http/handler"
+	"ecommerce-api/internal/delivery/http/middleware"
 
-    "github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin"
 )
 
 type Router struct {
@@ -32,7 +33,21 @@ func NewRouter(
 }
 
 func (ro *Router) Setup() *gin.Engine {
-    r := gin.Default()
+    r := gin.New()
+    r.Use(middleware.Recovery())
+    r.Use(middleware.Logger())
+    r.NoRoute(func(c *gin.Context){
+        c.JSON(404, gin.H{
+            "success": false,
+            "error": fmt.Sprintf("route %s %s not found", c.Request.Method, c.Request.URL.Path),
+        })
+    })
+    r.NoMethod(func(c *gin.Context) {
+        c.JSON(405, gin.H{
+            "success": false,
+            "error":   "method not allowed",
+        })
+    })
 
     // Health — no auth
     startTime := time.Now()
