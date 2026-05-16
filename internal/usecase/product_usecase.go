@@ -41,12 +41,12 @@ func (uc *productUsecase) GetProduct(id uint) (*entity.Product, error) {
     return p, nil
 }
 
-func (uc *productUsecase) ListProducts(page, limit int) ([]entity.Product, int64, error) {
-    if page < 1    { page  = 1 }
-    if limit < 1   { limit = 10 }
-    if limit > 100 { limit = 100 }
+func (uc *productUsecase) ListProducts(filter entity.ProductFilter) ([]entity.Product, int64, error) {
+    if filter.Page  < 1   { filter.Page  = 1 }
+    if filter.Limit < 1   { filter.Limit = 10 }
+    if filter.Limit > 100 { filter.Limit = 100 }
 
-    products, total, err := uc.repo.FindAll(page, limit)
+    products, total, err := uc.repo.FindAll(filter)
     if err != nil {
         return nil, 0, fmt.Errorf("ListProducts: %w", err)
     }

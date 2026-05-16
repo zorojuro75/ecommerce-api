@@ -35,3 +35,12 @@ func (p Product) IsAvailable() bool {
     return p.Stock > 0
 }
 
+type ProductFilter struct {
+    Page     int
+    Limit    int
+    Search   string
+    MinPrice float64
+    MaxPrice float64
+    Sort     string
+}
+

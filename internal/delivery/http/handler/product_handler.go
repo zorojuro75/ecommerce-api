@@ -7,7 +7,9 @@ import (
 
 	responses "ecommerce-api/internal/delivery/http/responses"
 	"ecommerce-api/internal/domain/contract"
+	"ecommerce-api/internal/domain/entity"
 	"ecommerce-api/pkg/apperror"
+	"ecommerce-api/pkg/pagination"
 
 	"github.com/gin-gonic/gin"
 )
@@ -65,12 +67,24 @@ func NewProductHandler(uc contract.ProductUsecase) *ProductHandler {
 
 // GET /api/v1/products
 func (h *ProductHandler) List(c *gin.Context) {
-    page,  _ := strconv.Atoi(c.DefaultQuery("page",  "1"))
-    limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+    p := pagination.FromContext(c)
 
-    products, total, err := h.uc.ListProducts(page, limit)
+    minPrice, _ := strconv.ParseFloat(c.Query("min_price"), 64)
+    maxPrice, _ := strconv.ParseFloat(c.Query("max_price"), 64)
+
+    filter := entity.ProductFilter{
+        Page:     p.Page,
+        Limit:    p.Limit,
+        Search:   c.Query("search"),
+        MinPrice: minPrice,
+        MaxPrice: maxPrice,
+        Sort:     c.Query("sort"),
+    }
+
+    products, total, err := h.uc.ListProducts(filter)
     if err != nil { mapErr(c, err); return }
-    responses.Paginated(c, products, total, page, limit)
+
+    responses.Paginated(c, products, total, p.Page, p.Limit)
 }
 
 // GET /api/v1/products/:id

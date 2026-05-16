@@ -1,17 +1,16 @@
 package handler
 
 import (
-    "net/http"
-    "strconv"
+	"net/http"
 
-    "ecommerce-api/internal/domain/contract"
-    responses   "ecommerce-api/internal/delivery/http/responses"
-    "ecommerce-api/internal/delivery/http/middleware"
+	"ecommerce-api/internal/delivery/http/middleware"
+	responses "ecommerce-api/internal/delivery/http/responses"
+	"ecommerce-api/internal/domain/contract"
+	"ecommerce-api/pkg/pagination"
 
-    "github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin"
 )
 
-// Request structs
 type orderItemReq struct {
     ProductID uint `json:"product_id" binding:"required"`
     Quantity  int  `json:"quantity"   binding:"required,min=1"`
@@ -92,18 +91,17 @@ func (h *OrderHandler) MyOrders(c *gin.Context) {
         return
     }
 
-    page,  _ := strconv.Atoi(c.DefaultQuery("page",  "1"))
-    limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+    p := pagination.FromContext(c)
 
-    orders, total, err := h.uc.ListUserOrders(userID, page, limit)
+    orders, total, err := h.uc.ListUserOrders(userID, p.Page, p.Limit)
     if err != nil { mapErr(c, err); return }
 
     c.JSON(http.StatusOK, gin.H{
         "success": true,
         "data":    orders,
         "total":   total,
-        "page":    page,
-        "limit":   limit,
+        "page":    p.Page,
+        "limit":   p.Limit,
     })
 }
 
