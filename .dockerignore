@@ -1,0 +1,8 @@
+.git
+.gitignore
+.env
+*.md
+scratch/
+tmp/
+*.test
+coverage.out
