@@ -29,6 +29,3 @@ build:
 
 test:
 	go test ./... -v
-
-check:
-	grep -r "gin-gonic\|gorm.io" internal/domain/ internal/usecase/ || echo "✓ Clean"
